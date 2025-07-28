@@ -12,20 +12,21 @@ const Projects: React.FC = () => {
     const [media, setMedia] = useState<File | null>(null);
 
     // Fetch projects from backend on mount
+    const apiUrl = process.env.REACT_APP_API_URL;
     useEffect(() => {
         const fetchProjects = async () => {
-            const response = await fetch('http://localhost:5000/api/projects');
+            const response = await fetch(`${apiUrl}/api/projects`);
             const data = await response.json();
             console.log('Fetched projects:', data); // Debug log
             setProjects(data.reverse()); // Show latest first
         };
         fetchProjects();
-    }, []);
+    }, [apiUrl]);
 
 
     // Optionally, you can add a function to refresh projects after upload
     const refreshProjects = async () => {
-        const response = await fetch('http://localhost:5000/api/projects');
+        const response = await fetch(`${apiUrl}/api/projects`);
         const data = await response.json();
         setProjects(data.reverse());
     };
@@ -38,7 +39,7 @@ const Projects: React.FC = () => {
         formData.append('description', description);
         formData.append('link', link);
         if (media) formData.append('media', media);
-        await fetch('http://localhost:5000/api/projects', {
+        await fetch(`${apiUrl}/api/projects`, {
             method: 'POST',
             body: formData
         });
