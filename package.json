@@ -1,0 +1,57 @@
+{
+  "name": "developer-portfolio",
+  "version": "1.0.0",
+  "description": "A personal portfolio to showcase projects and skills.",
+  "main": "src/index.tsx",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": [
+    "portfolio",
+    "developer",
+    "react"
+  ],
+  "author": "Bolaji Onatunde",
+  "license": "MIT",
+  "dependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.4",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.3.4",
+    "react-scripts": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.87",
+    "@types/react-dom": "^17.0.26",
+    "typescript": "^4.1.2"
+  },
+  "homepage": "https://github.com/bsonatunde/NewPortfolio.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bsonatunde/NewPortfolio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bsonatunde/NewPortfolio/issues"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
