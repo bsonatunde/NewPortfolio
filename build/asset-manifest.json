@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/bsonatunde/NewPortfolio.git/static/css/main.aee974cf.css",
+    "main.js": "/bsonatunde/NewPortfolio.git/static/js/main.4b672c00.js",
+    "index.html": "/bsonatunde/NewPortfolio.git/index.html",
+    "main.aee974cf.css.map": "/bsonatunde/NewPortfolio.git/static/css/main.aee974cf.css.map",
+    "main.4b672c00.js.map": "/bsonatunde/NewPortfolio.git/static/js/main.4b672c00.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.aee974cf.css",
+    "static/js/main.4b672c00.js"
+  ]
+}
