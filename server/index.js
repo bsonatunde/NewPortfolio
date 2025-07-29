@@ -29,7 +29,7 @@ app.post('/api/contact', async (req, res) => {
 
 // Connect to MongoDB and start server only after successful connection
 const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/${process.env.MONGO_DB}?retryWrites=true&w=majority&appName=Cluster0`;
-mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(MONGO_URI)
   .then(() => {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
@@ -87,4 +87,8 @@ app.post('/api/projects', upload.fields([
   res.status(201).json(project);
 });
 
+// Serve React frontend for all other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+});
 // ...existing code...
