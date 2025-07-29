@@ -34,7 +34,7 @@
     "@types/react-dom": "^17.0.26",
     "typescript": "^4.1.2"
   },
-  "homepage": "https://github.com/bsonatunde/NewPortfolio.git",
+  "homepage": ".",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bsonatunde/NewPortfolio.git"
