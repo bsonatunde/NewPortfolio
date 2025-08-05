@@ -97,6 +97,23 @@ app.post('/api/projects', upload.fields([
   }
 });
 
+// Delete project route
+app.delete('/api/projects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProject = await Project.findByIdAndDelete(id);
+    
+    if (!deletedProject) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    res.json({ message: 'Project deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    res.status(500).json({ error: 'Failed to delete project' });
+  }
+});
+
 // Serve React frontend for all other routes (must be last)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));

@@ -10,6 +10,7 @@ const Projects: React.FC = () => {
     const [description, setDescription] = useState('');
     const [link, setLink] = useState('');
     const [media, setMedia] = useState<File | null>(null);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     // Fetch projects from backend on mount
     useEffect(() => {
@@ -25,6 +26,18 @@ const Projects: React.FC = () => {
         };
         fetchProjects();
     }, []);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            setOpenDropdown(null);
+        };
+        
+        if (openDropdown) {
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+        }
+    }, [openDropdown]);
 
 
     // Optionally, you can add a function to refresh projects after upload
@@ -68,6 +81,30 @@ const Projects: React.FC = () => {
         }
     };
 
+    // Delete project function
+    const handleDelete = async (projectId: string) => {
+        if (window.confirm('Are you sure you want to delete this project?')) {
+            try {
+                const response = await fetch(`/api/projects/${projectId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    refreshProjects();
+                } else {
+                    console.error('Error deleting project');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        }
+        setOpenDropdown(null);
+    };
+
+    // Toggle dropdown menu
+    const toggleDropdown = (projectId: string) => {
+        setOpenDropdown(openDropdown === projectId ? null : projectId);
+    };
+
     return (
         <div className="main-content" style={{ minHeight: 'calc(100vh - 120px)', maxWidth: 1100, margin: '0 auto', padding: 24 }}>
             <Header
@@ -92,25 +129,131 @@ const Projects: React.FC = () => {
                             return url;
                         };
                         const isVideo = project.image && (project.image.endsWith('.mp4') || project.image.endsWith('.webm') || project.image.endsWith('.mov'));
+                        const projectId = (project._id || project.id || idx).toString();
+                        
                         return (
-                            <div key={project._id || project.id || idx} style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(34,34,59,0.07)', padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                {project.image ? (
-                                    isVideo ? (
-                                        <video controls style={{ width: 180, height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }}>
-                                            <source src={getMediaUrl(project.image)} />
-                                            Your browser does not support the video tag.
-                                        </video>
+                            <div key={projectId} style={{ 
+                                background: '#fff', 
+                                borderRadius: 12, 
+                                boxShadow: '0 2px 8px rgba(34,34,59,0.07)', 
+                                padding: 20, 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                position: 'relative'
+                            }}>
+                                {/* Three-dot menu */}
+                                <div style={{ position: 'absolute', top: 15, right: 15 }}>
+                                    <button 
+                                        onClick={() => toggleDropdown(projectId)}
+                                        style={{ 
+                                            background: 'none', 
+                                            border: 'none', 
+                                            cursor: 'pointer', 
+                                            fontSize: '20px',
+                                            color: '#666',
+                                            padding: '5px'
+                                        }}
+                                    >
+                                        ⋮
+                                    </button>
+                                    {openDropdown === projectId && (
+                                        <div 
+                                            onClick={(e) => e.stopPropagation()}
+                                            style={{
+                                                position: 'absolute',
+                                                top: '100%',
+                                                right: 0,
+                                                background: '#fff',
+                                                border: '1px solid #ddd',
+                                                borderRadius: 8,
+                                                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                                zIndex: 10,
+                                                minWidth: 120
+                                            }}
+                                        >
+                                            <button
+                                                onClick={() => {
+                                                    // Handle edit - you can add edit functionality here
+                                                    console.log('Edit project:', projectId);
+                                                    setOpenDropdown(null);
+                                                }}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px 15px',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    textAlign: 'left',
+                                                    cursor: 'pointer',
+                                                    borderBottom: '1px solid #eee'
+                                                }}
+                                            >
+                                                ✏️ Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(projectId)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '10px 15px',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    textAlign: 'left',
+                                                    cursor: 'pointer',
+                                                    color: '#e74c3c'
+                                                }}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Media content */}
+                                <div style={{ textAlign: 'center', marginBottom: 15 }}>
+                                    {project.image ? (
+                                        isVideo ? (
+                                            <video controls style={{ width: '100%', maxWidth: 280, height: 160, objectFit: 'cover', borderRadius: 8 }}>
+                                                <source src={getMediaUrl(project.image)} />
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        ) : (
+                                            <img src={getMediaUrl(project.image)} alt={project.title} style={{ width: '100%', maxWidth: 280, height: 160, objectFit: 'cover', borderRadius: 8 }} />
+                                        )
                                     ) : (
-                                        <img src={getMediaUrl(project.image)} alt={project.title} style={{ width: 180, height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />
-                                    )
-                                ) : (
-                                    <div style={{ width: 180, height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', borderRadius: 8, marginBottom: 12, color: '#888' }}>
-                                        No image or video
-                                    </div>
-                                )}
-                                <h2 style={{ margin: '8px 0' }}>{project.title}</h2>
-                                <p style={{ color: '#444', marginBottom: 12 }}>{project.description}</p>
-                                <a href={project.link} target="_blank" rel="noopener noreferrer" style={{ color: '#4a4e69', textDecoration: 'underline', fontWeight: 500 }}>View Project</a>
+                                        <div style={{ width: '100%', maxWidth: 280, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: 8, color: '#888', margin: '0 auto' }}>
+                                            No media
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Project details */}
+                                <div style={{ flexGrow: 1, textAlign: 'center' }}>
+                                    <h2 style={{ margin: '0 0 10px 0', fontSize: '1.25rem', color: '#22223b' }}>{project.title}</h2>
+                                    <p style={{ color: '#666', marginBottom: 20, fontSize: '0.95rem', lineHeight: 1.5 }}>{project.description}</p>
+                                </div>
+
+                                {/* View Project Button */}
+                                <div style={{ textAlign: 'center', marginTop: 'auto' }}>
+                                    <a 
+                                        href={project.link} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        style={{ 
+                                            display: 'inline-block',
+                                            padding: '12px 24px',
+                                            background: '#22223b',
+                                            color: '#fff',
+                                            textDecoration: 'none',
+                                            borderRadius: 6,
+                                            fontWeight: 600,
+                                            fontSize: '0.95rem',
+                                            transition: 'background 0.3s ease'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.background = '#1a1a2e'}
+                                        onMouseOut={(e) => e.currentTarget.style.background = '#22223b'}
+                                    >
+                                        View Project →
+                                    </a>
+                                </div>
                             </div>
                         );
                     })}
