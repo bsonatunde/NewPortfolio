@@ -12,42 +12,60 @@ const Projects: React.FC = () => {
     const [media, setMedia] = useState<File | null>(null);
 
     // Fetch projects from backend on mount
-    const apiUrl = process.env.REACT_APP_API_URL;
     useEffect(() => {
         const fetchProjects = async () => {
-            const response = await fetch(`${apiUrl}/api/projects`);
-            const data = await response.json();
-            console.log('Fetched projects:', data); // Debug log
-            setProjects(data.reverse()); // Show latest first
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                console.log('Fetched projects:', data); // Debug log
+                setProjects(data.reverse()); // Show latest first
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+            }
         };
         fetchProjects();
-    }, [apiUrl]);
+    }, []);
 
 
     // Optionally, you can add a function to refresh projects after upload
     const refreshProjects = async () => {
-        const response = await fetch(`${apiUrl}/api/projects`);
-        const data = await response.json();
-        setProjects(data.reverse());
+        try {
+            const response = await fetch('/api/projects');
+            const data = await response.json();
+            setProjects(data.reverse());
+        } catch (error) {
+            console.error('Error refreshing projects:', error);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !description || !link) return;
+        
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('link', link);
         if (media) formData.append('media', media);
-        await fetch(`${apiUrl}/api/projects`, {
-            method: 'POST',
-            body: formData
-        });
-        setTitle('');
-        setDescription('');
-        setLink('');
-        setMedia(null);
-        refreshProjects(); // Refresh list after upload
+        
+        try {
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                setTitle('');
+                setDescription('');
+                setLink('');
+                setMedia(null);
+                refreshProjects(); // Refresh list after upload
+            } else {
+                console.error('Error uploading project');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
     };
 
     return (
@@ -70,9 +88,7 @@ const Projects: React.FC = () => {
                         // Determine if the file is an image or video
                         const getMediaUrl = (url?: string) => {
                             if (!url) return '';
-                            if (url.startsWith('/uploads/')) {
-                                return `http://localhost:5000${url}`;
-                            }
+                            // Use relative URL for deployed version
                             return url;
                         };
                         const isVideo = project.image && (project.image.endsWith('.mp4') || project.image.endsWith('.webm') || project.image.endsWith('.mov'));

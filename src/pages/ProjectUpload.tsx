@@ -14,21 +14,34 @@ const ProjectUpload: React.FC<{ onUpload: (project: Project) => void }> = ({ onU
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !description || !link) return;
+        
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('link', link);
         if (media) formData.append('media', media);
-        await fetch('http://localhost:5000/api/projects', {
-            method: 'POST',
-            body: formData
-        });
-        setTitle('');
-        setDescription('');
-        setLink('');
-        setMedia(null);
-        alert('Project uploaded successfully!');
-        history.push('/projects');
+        
+        try {
+            const response = await fetch('/api/projects', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                setTitle('');
+                setDescription('');
+                setLink('');
+                setMedia(null);
+                alert('Project uploaded successfully!');
+                history.push('/projects');
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error || 'Failed to upload project'}`);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Network error: Failed to upload project');
+        }
     };
 
     return (
