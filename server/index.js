@@ -64,31 +64,41 @@ const upload = multer({ storage });
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/projects', async (req, res) => {
-  const projects = await Project.find();
-  res.json(projects);
+  try {
+    const projects = await Project.find();
+    res.json(projects);
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    res.status(500).json({ error: 'Failed to fetch projects' });
+  }
 });
 
 // Update POST route to handle file uploads
 app.post('/api/projects', upload.fields([
   { name: 'media', maxCount: 1 }
 ]), async (req, res) => {
-  const { title, description, link } = req.body;
-  let mediaUrl = '';
-  if (req.files && req.files.media && req.files.media[0]) {
-    mediaUrl = `/uploads/${req.files.media[0].filename}`;
+  try {
+    const { title, description, link } = req.body;
+    let mediaUrl = '';
+    if (req.files && req.files.media && req.files.media[0]) {
+      mediaUrl = `/uploads/${req.files.media[0].filename}`;
+    }
+    const project = new Project({
+      title,
+      description,
+      link,
+      image: mediaUrl // can be image or video
+    });
+    await project.save();
+    res.status(201).json(project);
+  } catch (error) {
+    console.error('Error creating project:', error);
+    res.status(500).json({ error: 'Failed to create project' });
   }
-  const project = new Project({
-    title,
-    description,
-    link,
-    image: mediaUrl // can be image or video
-  });
-  await project.save();
-  res.status(201).json(project);
 });
 
 // Serve React frontend for all other routes
-app.get('/*', (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../build/index.html'));
 });
 // ...existing code...
