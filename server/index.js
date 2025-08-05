@@ -49,19 +49,47 @@ const projectSchema = new mongoose.Schema({
 
 const Project = mongoose.model('Project', projectSchema);
 
-// Set up multer for file uploads
+// Ensure uploads directory exists
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Set up multer for file uploads with better configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, 'uploads'));
+    cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
+    // Create unique filename with timestamp and random string to avoid conflicts
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const fileExtension = path.extname(file.originalname);
+    const fileName = file.fieldname + '-' + uniqueSuffix + fileExtension;
+    cb(null, fileName);
   }
 });
-const upload = multer({ storage });
 
-// Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow images and videos
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and video files are allowed!'), false);
+    }
+  }
+});
+
+// Serve uploaded files statically with proper cache headers
+app.use('/uploads', express.static(uploadsDir, {
+  maxAge: '1d', // Cache for 1 day
+  etag: false
+}));
 
 app.get('/api/projects', async (req, res) => {
   try {
@@ -101,12 +129,26 @@ app.post('/api/projects', upload.fields([
 app.delete('/api/projects/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedProject = await Project.findByIdAndDelete(id);
+    const project = await Project.findById(id);
     
-    if (!deletedProject) {
+    if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
     
+    // Delete the associated file if it exists
+    if (project.image && project.image.startsWith('/uploads/')) {
+      const filePath = path.join(__dirname, project.image);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log('Deleted file:', filePath);
+        } catch (fileError) {
+          console.error('Error deleting file:', fileError);
+        }
+      }
+    }
+    
+    await Project.findByIdAndDelete(id);
     res.json({ message: 'Project deleted successfully' });
   } catch (error) {
     console.error('Error deleting project:', error);

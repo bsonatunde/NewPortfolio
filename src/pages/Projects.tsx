@@ -123,10 +123,11 @@ const Projects: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
                     {projects.map((project, idx) => {
                         // Determine if the file is an image or video
-                        const getMediaUrl = (url?: string) => {
+                        const getMediaUrl = (url?: string, projectId?: string) => {
                             if (!url) return '';
-                            // Use relative URL for deployed version
-                            return url;
+                            // Add project-specific cache-busting parameter
+                            const cacheBuster = `?id=${projectId || 'default'}`;
+                            return url + cacheBuster;
                         };
                         const isVideo = project.image && (project.image.endsWith('.mp4') || project.image.endsWith('.webm') || project.image.endsWith('.mov'));
                         const projectId = (project._id || project.id || idx).toString();
@@ -212,11 +213,22 @@ const Projects: React.FC = () => {
                                     {project.image ? (
                                         isVideo ? (
                                             <video controls style={{ width: '100%', maxWidth: 280, height: 160, objectFit: 'cover', borderRadius: 8 }}>
-                                                <source src={getMediaUrl(project.image)} />
+                                                <source src={getMediaUrl(project.image, projectId)} />
                                                 Your browser does not support the video tag.
                                             </video>
                                         ) : (
-                                            <img src={getMediaUrl(project.image)} alt={project.title} style={{ width: '100%', maxWidth: 280, height: 160, objectFit: 'cover', borderRadius: 8 }} />
+                                            <img 
+                                                src={getMediaUrl(project.image, projectId)} 
+                                                alt={project.title} 
+                                                style={{ width: '100%', maxWidth: 280, height: 160, objectFit: 'cover', borderRadius: 8 }} 
+                                                onError={(e) => {
+                                                    console.error('Image failed to load:', project.image);
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                                onLoad={() => {
+                                                    console.log('Image loaded successfully:', project.image);
+                                                }}
+                                            />
                                         )
                                     ) : (
                                         <div style={{ width: '100%', maxWidth: 280, height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5', borderRadius: 8, color: '#888', margin: '0 auto' }}>
