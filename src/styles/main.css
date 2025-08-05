@@ -65,10 +65,11 @@ main, .main-content, .container, .content {
   border-radius: 12px;
   box-shadow: 0 2px 16px rgba(34,34,59,0.07);
   padding: 32px 24px;
+  margin-top: 100px; /* Account for fixed header */
 }
 
 .main-content {
-  min-height: calc(100vh - 120px); /* adjust for header/footer */
+  min-height: calc(100vh - 200px); /* adjust for header/footer */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -110,6 +111,18 @@ li {
   }
 }
 
+/* Animation for mobile menu slide down */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hero-animate {
   animation: fadeInUp 1s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
@@ -122,14 +135,52 @@ li {
   animation: fadeInUp 1.2s 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   main, .main-content, .container, .content {
-    padding: 16px 4px;
+    padding: 16px 12px;
+    margin-top: 80px; /* Smaller header on mobile */
+    max-width: 95%;
+    border-radius: 8px;
   }
+  
+  .main-content {
+    min-height: calc(100vh - 160px);
+  }
+  
   header h1 {
     font-size: 1.5rem;
   }
+  
   nav ul {
     gap: 12px;
+  }
+  
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+    margin-top: 24px;
+  }
+  
+  li {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  main, .main-content, .container, .content {
+    padding: 12px 8px;
+    margin-top: 70px;
+    max-width: 98%;
+  }
+  
+  h1 {
+    font-size: 1.6rem;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
   }
 }
