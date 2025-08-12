@@ -37,7 +37,11 @@ if (missingEnv.length > 0) {
 }
 const MONGO_URI = process.env.MONGO_URI;
 console.log('Attempting to connect to MongoDB...');
-console.log('Connection string (without password):', MONGO_URI.replace(/:[^:@]*@/, ':****@'));
+if (MONGO_URI) {
+  console.log('Connection string (without password):', MONGO_URI.replace(/:[^:@]*@/, ':****@'));
+} else {
+  console.error('MONGO_URI is undefined. Check your environment variables.');
+}
 mongoose.connect(MONGO_URI)
   .then(() => {
     const PORT = process.env.PORT || 5002;
