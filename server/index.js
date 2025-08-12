@@ -28,7 +28,9 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Connect to MongoDB and start server only after successful connection
-const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/${process.env.MONGO_DB}?retryWrites=true&w=majority&appName=Cluster0`;
+const MONGO_URI = process.env.MONGODB_URI || `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}?retryWrites=true&w=majority&appName=Cluster0`;
+console.log('Attempting to connect to MongoDB...');
+console.log('Connection string (without password):', MONGO_URI.replace(/:[^:@]*@/, ':****@'));
 mongoose.connect(MONGO_URI)
   .then(() => {
     const PORT = process.env.PORT || 5000;
