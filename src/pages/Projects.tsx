@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
+const API_URL = process.env.REACT_APP_API_URL || '';
 import { Project } from '../types';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
 
-const Projects: React.FC = () => {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [link, setLink] = useState('');
-    const [media, setMedia] = useState<File | null>(null);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+let Projects: React.FC = () => {
+    let [projects, setProjects] = useState<Project[]>([]);
+    let [title, setTitle] = useState('');
+    let [description, setDescription] = useState('');
+    let [link, setLink] = useState('');
+    let [media, setMedia] = useState<File | null>(null);
+    let [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     // Fetch projects from backend on mount
     useEffect(() => {
-        const fetchProjects = async () => {
+        let fetchProjects = async () => {
             try {
-                const response = await fetch('/api/projects');
-                const data = await response.json();
+                let response = await fetch(`${API_URL}/api/projects`);
+                let data = await response.json();
                 console.log('Fetched projects:', data); // Debug log
                 setProjects(data.reverse()); // Show latest first
             } catch (error) {
@@ -29,7 +30,7 @@ const Projects: React.FC = () => {
 
     // Close dropdown when clicking outside
     useEffect(() => {
-        const handleClickOutside = () => {
+        let handleClickOutside = () => {
             setOpenDropdown(null);
         };
         
@@ -41,28 +42,28 @@ const Projects: React.FC = () => {
 
 
     // Optionally, you can add a function to refresh projects after upload
-    const refreshProjects = async () => {
+    let refreshProjects = async () => {
         try {
-            const response = await fetch('/api/projects');
-            const data = await response.json();
+            let response = await fetch(`${API_URL}/api/projects`);
+            let data = await response.json();
             setProjects(data.reverse());
         } catch (error) {
             console.error('Error refreshing projects:', error);
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    let handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !description || !link) return;
         
-        const formData = new FormData();
+        let formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('link', link);
         if (media) formData.append('media', media);
         
         try {
-            const response = await fetch('/api/projects', {
+            let response = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 body: formData
             });
@@ -82,10 +83,10 @@ const Projects: React.FC = () => {
     };
 
     // Delete project function
-    const handleDelete = async (projectId: string) => {
+    let handleDelete = async (projectId: string) => {
         if (window.confirm('Are you sure you want to delete this project?')) {
             try {
-                const response = await fetch(`/api/projects/${projectId}`, {
+                let response = await fetch(`${API_URL}/api/projects/${projectId}`, {
                     method: 'DELETE'
                 });
                 if (response.ok) {
@@ -101,7 +102,7 @@ const Projects: React.FC = () => {
     };
 
     // Toggle dropdown menu
-    const toggleDropdown = (projectId: string) => {
+    let toggleDropdown = (projectId: string) => {
         setOpenDropdown(openDropdown === projectId ? null : projectId);
     };
 
@@ -123,7 +124,7 @@ const Projects: React.FC = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32 }}>
                     {projects.map((project, idx) => {
                         // Determine if the file is an image or video
-                        const getMediaUrl = (url?: string, projectId?: string) => {
+                        let getMediaUrl = (url?: string, projectId?: string) => {
                             if (!url) return '';
                             // Add project-specific cache-busting parameter
                             const cacheBuster = `?id=${projectId || 'default'}`;

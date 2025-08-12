@@ -28,14 +28,32 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // Connect to MongoDB and start server only after successful connection
-const MONGO_URI = process.env.MONGODB_URI || `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}?retryWrites=true&w=majority&appName=Cluster0`;
+// Check required MongoDB environment variables
+const requiredEnv = ['MONGO_USER', 'MONGO_PASSWORD', 'MONGO_CLUSTER'];
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+if (missingEnv.length > 0) {
+  console.error('Missing required environment variables:', missingEnv.join(', '));
+  process.exit(1);
+}
+const MONGO_URI = process.env.MONGO_URI;
 console.log('Attempting to connect to MongoDB...');
 console.log('Connection string (without password):', MONGO_URI.replace(/:[^:@]*@/, ':****@'));
 mongoose.connect(MONGO_URI)
   .then(() => {
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 5002;
     app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
     console.log('Connected to MongoDB');
+    // Health check endpoint for MongoDB connection
+    app.get('/api/db-status', async (req, res) => {
+      const state = mongoose.connection.readyState;
+      // 1 = connected, 2 = connecting, 0 = disconnected, 3 = disconnecting
+      let status = 'unknown';
+      if (state === 1) status = 'connected';
+      else if (state === 2) status = 'connecting';
+      else if (state === 0) status = 'disconnected';
+      else if (state === 3) status = 'disconnecting';
+      res.json({ status });
+    });
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err);
@@ -113,6 +131,14 @@ app.post('/api/projects', upload.fields([
     if (req.files && req.files.media && req.files.media[0]) {
       mediaUrl = `/uploads/${req.files.media[0].filename}`;
     }
+    if (!title || !description || !link) {
+      console.error('Missing required fields:', { title, description, link });
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    if (!mediaUrl) {
+      console.error('No media file uploaded');
+      return res.status(400).json({ error: 'No media file uploaded' });
+    }
     const project = new Project({
       title,
       description,
@@ -123,7 +149,11 @@ app.post('/api/projects', upload.fields([
     res.status(201).json(project);
   } catch (error) {
     console.error('Error creating project:', error);
-    res.status(500).json({ error: 'Failed to create project' });
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to create project' });
+    }
   }
 });
 

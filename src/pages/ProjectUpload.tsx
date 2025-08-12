@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
+const API_URL = process.env.REACT_APP_API_URL || '';
 import { useHistory } from 'react-router-dom';
 import { Project } from '../types';
 import Footer from '../components/Footer';
 
-const ProjectUpload: React.FC<{ onUpload: (project: Project) => void }> = ({ onUpload }) => {
-    const history = useHistory();
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [link, setLink] = useState('');
-    const [media, setMedia] = useState<File | null>(null);
-    const [submitted, setSubmitted] = useState(false);
+let ProjectUpload: React.FC<{ onUpload: (project: Project) => void }> = ({ onUpload }) => {
+    let history = useHistory();
+    let [title, setTitle] = useState('');
+    let [description, setDescription] = useState('');
+    let [link, setLink] = useState('');
+    let [media, setMedia] = useState<File | null>(null);
+    let [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    let handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !description || !link) return;
         
-        const formData = new FormData();
+        let formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
         formData.append('link', link);
         if (media) formData.append('media', media);
         
         try {
-            const response = await fetch('/api/projects', {
+            let response = await fetch(`${API_URL}/api/projects`, {
                 method: 'POST',
                 body: formData
             });
@@ -34,8 +35,9 @@ const ProjectUpload: React.FC<{ onUpload: (project: Project) => void }> = ({ onU
                 setMedia(null);
                 alert('Project uploaded successfully!');
                 history.push('/projects');
+                window.location.reload();
             } else {
-                const errorData = await response.json();
+                let errorData = await response.json();
                 alert(`Error: ${errorData.error || 'Failed to upload project'}`);
             }
         } catch (error) {

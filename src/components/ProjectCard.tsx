@@ -1,3 +1,7 @@
+
+// MongoDB connection string example:
+// mongodb+srv://portfolio:S9DJjht2HItwX1zm@cluster0.0pyecs9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+// For security, use environment variables to store sensitive credentials.
 import React from 'react';
 
 const ProjectCard: React.FC<{

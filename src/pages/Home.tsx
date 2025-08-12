@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ProjectCard from '../components/ProjectCard';
@@ -85,15 +85,40 @@ const Home: React.FC = () => {
         </ul>
       </section>
 
-      {/* Featured Projects Section */}
+      {/* Projects Section - fetch from backend */}
       <section className="project-animate" style={{ marginBottom: 40 }}>
-        <h2>Featured Project</h2>
-        <ProjectCard
-          title="Awesome Portfolio Website"
-          description="A modern, responsive portfolio built with React and TypeScript. Features project showcase, contact form, and beautiful UI."
-          image="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=400&q=80"
-          link="/projects"
-        />
+        <h2>Projects</h2>
+        {
+          (() => {
+            const [projects, setProjects] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState('');
+            useEffect(() => {
+              fetch('/api/projects')
+                .then(res => res.json())
+                .then(data => {
+                  setProjects(data);
+                  setLoading(false);
+                })
+                .catch(err => {
+                  setError('Failed to load projects');
+                  setLoading(false);
+                });
+            }, []);
+            if (loading) return <p>Loading projects...</p>;
+            if (error) return <p style={{ color: 'red' }}>{error}</p>;
+            if (projects.length === 0) return <p>No projects found.</p>;
+            return projects.map((project: any) => (
+              <ProjectCard
+                key={project._id}
+                title={project.title}
+                description={project.description}
+                image={project.image}
+                link={project.link}
+              />
+            ));
+          })()
+        }
       </section>
 
       <Footer />
